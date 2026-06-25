@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\S3FileToolController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'status' => true,
+        'message' => 'Businessbid Cloud Storage api is running.',
+    ]);
 });
 
 Route::get('/clear-cache', function () {
@@ -14,7 +17,10 @@ Route::get('/clear-cache', function () {
     Artisan::call('route:clear');
     Artisan::call('view:clear');
     Artisan::call('optimize:clear');
-    return 'Cache cleared successfully';
+    return response()->json([
+        'status' => true,
+        'message' => 'Cache cleared successfully.',
+    ]);
 
 });
 
@@ -23,26 +29,9 @@ Route::get('/run-migration', function () {
     $migrateOutput = Artisan::output();
 
     return response()->json([
+        'status' => true,
         'message' => 'Migration run successfully.',
         'migrate_output' => $migrateOutput,
-    ]);
-});
-
-// Route::get('/run-seed', function () {
-//     Artisan::call('db:seed --class=RolesAndPermissionsSeeder');
-//     $seedOutput = Artisan::output();
-//     return response()->json([
-//         'message' => 'Seed run successfully.',
-//         'seed_output' => $seedOutput,
-//     ]);
-// });
-
-Route::get('/storage-link', function () {
-    Artisan::call('storage:link');
-    $storageLinkOutput = Artisan::output();
-    return response()->json([
-        'message' => 'Storage link created successfully.',
-        'storage_link_output' => $storageLinkOutput,
     ]);
 });
 
