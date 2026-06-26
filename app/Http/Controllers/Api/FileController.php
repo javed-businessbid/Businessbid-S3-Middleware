@@ -123,13 +123,29 @@ class FileController extends Controller
         $fileName = $uploadedFile->getClientOriginalName();
         $storedPath = trim($directory.'/'.$fileName, '/');
 
-        $disk = Storage::build(array_merge(config('filesystems.disks.s3'), [
-            'bucket' => $bucketName,
-        ]));
+        try {
+            $disk = Storage::build(array_merge(config('filesystems.disks.s3'), [
+                'bucket' => $bucketName,
+            ]));
 
-        $disk->putFileAs($directory, $uploadedFile, $fileName, [
-            'visibility' => 'private',
-        ]);
+            $storedResult = $disk->putFileAs($directory, $uploadedFile, $fileName, [
+                'visibility' => 'private',
+            ]);
+
+            if (! $storedResult) {
+                return response()->json([
+                    'message' => 'Attachment upload failed.',
+                    'error' => 'S3 rejected the file write operation.',
+                ], Response::HTTP_BAD_GATEWAY);
+            }
+        } catch (Throwable $throwable) {
+            report($throwable);
+
+            return response()->json([
+                'message' => 'Attachment upload failed.',
+                'error' => 'Unable to write the file to S3. Check AWS credentials, bucket name, region, and endpoint configuration.',
+            ], Response::HTTP_BAD_GATEWAY);
+        }
 
         return response()->json([
             'message' => 'Attachment uploaded successfully.',
