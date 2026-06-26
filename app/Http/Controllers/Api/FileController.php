@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\File;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -123,6 +124,17 @@ class FileController extends Controller
         $fileName = $uploadedFile->getClientOriginalName();
         $storedPath = trim($directory.'/'.$fileName, '/');
 
+        Log::info('S3 upload attachment request received.', [
+            'bucket_name' => $bucketName,
+            'directory' => $directory,
+            'file_name' => $fileName,
+            'mime_type' => $uploadedFile->getClientMimeType(),
+            'size' => $uploadedFile->getSize(),
+            'client_ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'endpoint' => $request->path(),
+        ]);
+
         try {
             $disk = Storage::build(array_merge(config('filesystems.disks.s3'), [
                 'bucket' => $bucketName,
@@ -139,7 +151,17 @@ class FileController extends Controller
                 ], Response::HTTP_BAD_GATEWAY);
             }
         } catch (Throwable $throwable) {
-            report($throwable);
+            Log::error('S3 attachment upload failed.', [
+                'bucket_name' => $bucketName,
+                'directory' => $directory,
+                'file_name' => $fileName,
+                'exception_class' => $throwable::class,
+                'exception_message' => $throwable->getMessage(),
+                'exception_code' => $throwable->getCode(),
+                'exception_file' => $throwable->getFile(),
+                'exception_line' => $throwable->getLine(),
+                'trace' => $throwable->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'message' => 'Attachment upload failed.',
