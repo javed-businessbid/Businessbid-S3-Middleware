@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureWorkspaceScope;
 use App\Http\Middleware\RejectFailedFileUploads;
+use App\Http\Middleware\RestrictApiByIp;
 use App\Http\Middleware\RequestContext;
 use App\Support\ApiResponse;
 use App\Support\DatabaseExceptionPresenter;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(
             prepend: [
                 ValidatePostSize::class,
+                RestrictApiByIp::class,
             ],
             append: [
                 RejectFailedFileUploads::class,
