@@ -3,7 +3,6 @@
 use App\Http\Middleware\EnsureWorkspaceScope;
 use App\Http\Middleware\RejectFailedFileUploads;
 use App\Http\Middleware\RestrictApiByIp;
-use App\Http\Middleware\RequestContext;
 use App\Support\ApiResponse;
 use App\Support\DatabaseExceptionPresenter;
 use Illuminate\Database\QueryException;
@@ -25,8 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(RequestContext::class);
-
         $middleware->api(
             prepend: [
                 ValidatePostSize::class,
