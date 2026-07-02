@@ -109,7 +109,6 @@ class FileController extends Controller
         $validated = $request->validate([
             'file' => ['required', 'file'],
             'bucket_name' => ['required', 'string', 'max:255'],
-            'directory' => ['nullable', 'string', 'max:500'],
         ]);
 
         $uploadedFile = $request->file('file');
@@ -120,7 +119,7 @@ class FileController extends Controller
         }
 
         $bucketName = trim($validated['bucket_name']);
-        $directory = trim($validated['directory'] ?? 'attachments/'.now()->format('Y/m'), '/');
+        $directory = 'documents/'.now()->format('Y/m');
         $fileName = $uploadedFile->getClientOriginalName();
         $storedPath = trim($directory.'/'.$fileName, '/');
 
